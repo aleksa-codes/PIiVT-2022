@@ -1,7 +1,12 @@
-import axios from "axios"
-import { Link } from "react-router-dom"
+import { Link, Redirect } from "react-router-dom"
 import BasePage, { BasePageProperties } from "../BasePage/BasePage"
 import CategoryModel from "../../../../03-back-end/src/components/category/model"
+import ArticleModel from "../../../../03-back-end/src/components/article/model"
+import CategoryService from "../../services/CategoryService"
+import EventRegister from "../../api/EventRegister"
+import ArticleService from "../../services/ArticleService"
+import ArticleItem from "../Article/ArticleItem"
+import { CardDeck } from "react-bootstrap"
 
 class CategoryPageProperties extends BasePageProperties {
   match?: {
@@ -16,6 +21,8 @@ class CategoryPageState {
   subcategories: CategoryModel[] = []
   showBackButton: boolean = false
   parentCategoryId: number | null = null
+  isUserLoggedIn: boolean = true
+  articles: ArticleModel[] = []
 }
 
 export default class CategoryPage extends BasePage<CategoryPageProperties> {
@@ -29,6 +36,8 @@ export default class CategoryPage extends BasePage<CategoryPageProperties> {
       subcategories: [],
       showBackButton: false,
       parentCategoryId: null,
+      isUserLoggedIn: true,
+      articles: [],
     }
   }
 
@@ -44,99 +53,62 @@ export default class CategoryPage extends BasePage<CategoryPageProperties> {
       this.apiGetTopLevelCategories()
     } else {
       this.apiGetCategory(cId)
+      this.apiGetArticles(cId)
     }
   }
 
   private apiGetTopLevelCategories() {
-    axios({
-      method: "get",
-      baseURL: "http://localhost:40080",
-      url: "/category",
-      timeout: 10000,
-      responseType: "text",
-      headers: {
-        Authorization: "Bearer FAKE-TOKEN",
-      },
-      // withCredentials: true,
-      maxRedirects: 0,
-    })
-      .then(res => {
-        if (!Array.isArray(res.data)) {
-          throw new Error("Invalid data received.")
-        }
-
-        this.setState({
-          title: "All categories",
-          subcategories: res.data,
-          showBackButton: false,
+    CategoryService.getTopLevelCategories().then(categories => {
+      if (categories.length === 0) {
+        return this.setState({
+          title: "No categories found",
+          subcategories: [],
+          showBackButton: true,
           parentCategoryId: null,
         })
-      })
-      .catch(err => {
-        const errorMessage = "" + err
+      }
 
-        if (errorMessage.includes("404")) {
-          this.setState({
-            title: "No categories found",
-            subcategories: [],
-            showBackButton: true,
-            parentCategoryId: null,
-          })
-        } else {
-          this.setState({
-            title: "Unable to load categories",
-            subcategories: [],
-            showBackButton: true,
-            parentCategoryId: null,
-          })
-        }
+      this.setState({
+        title: "All categories",
+        subcategories: categories,
+        showBackButton: false,
+        parentCategoryId: null,
       })
+    })
   }
 
   private apiGetCategory(cId: number) {
-    axios({
-      method: "get",
-      baseURL: "http://localhost:40080",
-      url: "/category/" + cId,
-      timeout: 10000,
-      responseType: "text",
-      headers: {
-        Authorization: "Bearer FAKE-TOKEN",
-      },
-      // withCredentials: true,
-      maxRedirects: 0,
-    })
-      .then(res => {
-        this.setState({
-          title: res.data?.name,
-          subcategories: res.data?.subcategories,
-          parentCategoryId: res.data?.parentCategoryId,
+    CategoryService.getCategoryById(cId).then(result => {
+      if (result === null) {
+        return this.setState({
+          title: "Category not found",
+          subcategories: [],
           showBackButton: true,
+          parentCategoryId: null,
         })
-      })
-      .catch(err => {
-        const errorMessage = "" + err
+      }
 
-        if (errorMessage.includes("404")) {
-          this.setState({
-            title: "Category not found",
-            subcategories: [],
-            showBackButton: true,
-            parentCategoryId: null,
-          })
-        } else {
-          this.setState({
-            title: "Unable to load category data",
-            subcategories: [],
-            showBackButton: true,
-            parentCategoryId: null,
-          })
-        }
+      this.setState({
+        title: result.name,
+        subcategories: result.subcategories,
+        parentCategoryId: result.parentCategoryId,
+        showBackButton: true,
       })
+    })
+  }
+
+  private apiGetArticles(cId: number) {
+    ArticleService.getArticlesByCategoryId(cId).then(result => {
+      this.setState({
+        articles: result,
+      })
+    })
   }
 
   componentDidMount() {
     this.getCategoryData()
+
+    EventRegister.on("AUTH_EVENT", this.authEventhandler.bind(this))
   }
 
   componentDidUpdate(
@@ -148,7 +120,23 @@ export default class CategoryPage extends BasePage<CategoryPageProperties> {
     }
   }
 
+  componentWillUnmount() {
+    EventRegister.off("AUTH_EVENT", this.authEventhandler.bind(this))
+  }
+
+  private authEventhandler(status: string) {
+    if (status === "force_login") {
+      this.setState({
+        isUserLoggedIn: false,
+      })
+    }
+  }
+
   renderMain(): JSX.Element {
+    if (this.state.isUserLoggedIn === false) {
+      return <Redirect to="/user/login" />
+    }
+
     return (
       <>
         <h1>
@@ -167,7 +155,7 @@ export default class CategoryPage extends BasePage<CategoryPageProperties> {
 
         {this.state.subcategories.length > 0 ? (
           <>
-            <p>Podkategorije:</p>
+            <p>Potkategorije:</p>
             <ul>
               {this.state.subcategories.map(catategory => (
                 <li key={"subcategory-link-" + catategory.categoryId}>
@@ -181,6 +169,15 @@ export default class CategoryPage extends BasePage<CategoryPageProperties> {
         ) : (
           ""
         )}
+
+        <CardDeck className="row">
+          {this.state.articles.map(article => (
+            <ArticleItem
+              key={"article-item-" + article.articleId}
+              article={article}
+            />
+          ))}
+        </CardDeck>
       </>
     )
   }
