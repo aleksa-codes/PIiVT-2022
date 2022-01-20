@@ -56,6 +56,7 @@ async function main() {
     }
 
     resources.databaseConnection.connect();
+    console.log("Connected to database");
 
     resources.services = {
         categoryService:      new CategoryService(resources),
@@ -97,6 +98,7 @@ async function main() {
     });
 
     application.listen(Config.server.port);
+    console.log(`Server is listening on port ${Config.server.port}`);
 }
 
 main();
