@@ -81,9 +81,9 @@ export default class Application extends React.Component {
   render() {
     return (
       <BrowserRouter>
-        <Container className="Application">
+        <Container className="Application d-flex flex-column min-vh-100">
           <div className="Application-header">
-            Front-end aplikacije
+          ⌚ Watches eCommerce
           </div>
 
           <TopMenu currentMenuType={ this.state.authorizedRole } />
@@ -129,7 +129,7 @@ export default class Application extends React.Component {
             </Switch>
           </div>
 
-          <div>
+          <div className="mt-auto">
             <p className="text-center">&copy; { new Date().getFullYear() } - Praktikum Internet i Veb tehnologije</p>
           </div>
         </Container>
