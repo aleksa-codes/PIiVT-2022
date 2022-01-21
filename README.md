@@ -1,8 +1,8 @@
-# Projekat iz predmeta Praktikum - Internet i veb tehnologije - 2020/2021.
+# Projekat iz predmeta Praktikum - Internet i veb tehnologije - 2021/2022.
 
 ## Sadržaj spremišta
 
-Ovde se nalazi projekat za predmeta Praktikum - Internet i veb tehnologije - 2020/2021.
+Ovde se nalazi projekat za predmeta Praktikum - Internet i veb tehnologije - 2021/2022.
 
 ## Struktura spremišta
 
@@ -14,4 +14,13 @@ Ovde se nalazi projekat za predmeta Praktikum - Internet i veb tehnologije - 202
 ## Kako se pokreće aplikacija
 
 1. Podigne se baza podataka iz SQL dump datoteke sa linka [02-resources/model.sql](./02-resources/model.sql)
-2. Pokrene se...
+
+2. `npm install` pa zatim `npm run start` iz foldera [04-front-end](./03-front-end) i [03-back-end](./03-back-end) (za back-end nekad mora `npm install typescript`)
+
+3. Postoje već dva napravljena test naloga: - korisnik: - username: aleksa@mail.local
+                                                        - password: test123
+
+                                            - admin:    - username: aleksa
+                                                        - password: test123
+
+4. Za prikaz slika artikla raspakovati zip fajl sa [linka](https://workupload.com/file/RTkdsruDWq2) u folder [03-back-end/static](./03-back-end/static)
