@@ -17,3 +17,5 @@ Aplikacija treba da omogući administratorima da dodaju nove ručne satove u baz
 ## Razrada projektne dokumentacije
 
 - [Model podataka](./Database-model.md)
+
+- [Pokretanje aplikacije i pristupni parametri za testiranje](../README.md#kako-se-pokreće-aplikacija)
